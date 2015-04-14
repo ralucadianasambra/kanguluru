@@ -23,7 +23,7 @@
     <!-- Create new game -->
      <div class="row valigh" ng-show="createGameState">
 		<div class="col s2 valigh-wrapper">
-			<select ng-model="nrPlayers" id="selectplayers">
+			<select ng-model="defaultNrPlayers" id="selectplayers">
 				<option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
 			</select>
 		</div> 
@@ -49,7 +49,15 @@
      
     <!-- Wait for everybody to get ready -->
      <div class="row center" ng-show="waitForPlayersState">
-        <div class="col s12">Wait for other players</div>
+         <div class="col s12"><h4>Wait for other players</h4></div>
+         <div class="col s12">Give these links to other players:
+                <div class="row s12 mt-30" ng-repeat="(id, p) in players track by $index">
+                    <div class="input-field col s12" ng-show="id > 0">
+                        <input type="text" id="link_{{id}}" value="{{appuri}}{{gameURI|btoa}}/{{id}}">
+                        <label for="link_{{id}}" class="active">Give this link to player {{id+1}}</label>
+                    </div>
+                </div>
+         </div>
         <div class="col s12"><button class="btn" type="button">Start first round</button></div>
     </div> 
 

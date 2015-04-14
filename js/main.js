@@ -10,7 +10,7 @@ var RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 var FOAF = $rdf.Namespace("http://xmlns.com/foaf/0.1/");
 var SPACE = $rdf.Namespace("http://www.w3.org/ns/pim/space#");
 var ACL = $rdf.Namespace("http://www.w3.org/ns/auth/acl#");
-var SHAM = $rdf.Namespace("http://example.org/shamblokus#");
+var KANG = $rdf.Namespace("http://example.org/kanguluru#");
 $rdf.Fetcher.crossSiteProxyTemplate=PROXY;
 var TIMEOUT = 90000;
 
@@ -19,7 +19,7 @@ var uluru = angular.module('Kanguluru', ['ui', 'ui.router']);
 uluru.config( function AppConfig ( $stateProvider, $urlRouterProvider ) {
   $urlRouterProvider.otherwise( '/' );
   $stateProvider.state( 'home', {
-    url: '/:game/:pid/:colors',
+    url: '/:game/:pid',
     views: {
       "main": {
         controller: 'Main'
@@ -49,9 +49,10 @@ uluru.filter('btoa', function() {
 //controller
 uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams) {
     // init
-    //$scope.providedBoard = 'https://shamblokus.databox.me/Games/';
+    $scope.providedBoard = 'https://shamblokus.databox.me/Games/';
     $scope.appuri = window.location.origin +window.location.pathname+'#/';
     $scope.selectPlayers = [{id:1, name:"1 player"}, {id:2, name:"2 players"}, {id:3, name:"3 players"}, {id:4, name:"4 players"}];
+    $scope.defaultNrPlayers = 1;
     $scope.playersJoined = 0;
     $scope.myId = 0;
     
@@ -64,7 +65,7 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     $scope.playState = false;
 	$scope.gameEndState = false;
 	$scope.playing = false;
-	$scope.soundOn = true;
+	$scope.soundOn = false;
 	$scope.players = [];
  
 
@@ -185,63 +186,33 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
   $scope.newGame = function() {
     var now = new Date().getTime();
     var g = new $rdf.graph();
-    g.add($rdf.sym(''), RDF("type"), SHAM("Shamblokus"));
+    g.add($rdf.sym(''), RDF("type"), KANG("Shamblokus"));
+    
+    for (var i=0; i < $scope.deck.length; i++) {
+        g.add($rdf.sym('#deck'+i), RDF("type"), KANG('Deck'));
+        g.add($rdf.sym('#deck'+i), KANG('id'), $rdf.lit(i));      
+        g.add($rdf.sym('#deck'+i), KANG('colorId'), $rdf.lit($scope.deck[i].colorId));
+        g.add($rdf.sym('#deck'+i), KANG('constraintId'), $rdf.lit($scope.deck[i].constraintId));
+    }
+    
     var s = new $rdf.Serializer(g).toN3(g);
+    var gameURI = $scope.providedBoard+'game-'+now;
+    console.log(gameURI, s);  
     $http({
       method: 'PUT',
-      url: $scope.userProfile.boardsURI+'game-'+now,
+      url: gameURI,
       withCredentials: true,
       headers: {
         'Content-Type': 'text/turtle',
         'Link': '<http://www.w3.org/ns/ldp#Resource>; rel="type"' 
       },
       data: s
-    }).success(function(data, status, headers) {
-      var gameURI = $scope.userProfile.boardsURI+'game-'+now;
-      var game = {
-        uri: gameURI,
-        name: gameURI,
-        date: new Date()
-      };
+    }).success(function(data, status, headers) {      
       $scope.configNewGame(gameURI);
-      // $scope.userProfile.games.push(game);
-      $scope.saveCredentials();
     }).error(function(data, status, headers) {
       console.log('Could not create new game file: HTTP '+status);
     });
   };
-
-
-//  $scope.configNewGame = function (uri) {
-//    $scope.config = true;
-//    $scope.players = [];
-//    $scope.activeBagId = 0;
-//
-//
-//    var query = '';
-//    for (var i=0; i<$scope.players.length; i++) {
-//      query += 'INSERT DATA { <#player'+i+'> <'+RDF("type").value+'> <'+SHAM("Player").value+'> . } ;\n';
-//      query += 'INSERT DATA { <#player'+i+'> <'+SHAM('playerId').value+'> "'+i+'" . } ;\n';
-//      query += 'INSERT DATA { <#player'+i+'> <'+SHAM('playerColors').value+'> "'+$scope.players[i].colors.toString()+'" . } ;\n';
-//      if (i == 0) {
-//        query += 'INSERT DATA { <#player'+i+'> <'+SHAM('playerName').value+'> "'+$scope.userProfile.name+'" . } ;\n';
-//        query += 'INSERT DATA { <#player'+i+'> <'+SHAM('playerJoined').value+'> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> . }';
-//      }
-//      if (i <= $scope.players.length-1) {
-//        query += " ;\n";
-//      }
-//    }
-//
-//    $scope.sendSPARQLPatch(uri, query).then(function(status) {
-//      if (status == 'success') {
-//        $scope.board = $scope.RecreateBoard(boardSize, boardXoff, boardYoff, []);
-//        $scope.gameURI = uri;
-//        $scope.$apply();
-//
-//        $scope.waitForPlayers();
-//      }
-//    });
-//  };
 
 
 //  $scope.gameUpdated = function(gameURI) {
@@ -1112,6 +1083,7 @@ $scope.CanvasState = function(canvas) {
 	
 	var text = "";
 	for(var cc = 0; cc < $scope.constraints.length; cc++){
+//		text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
 		text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\" checked = \"checked\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
 	}
 	document.getElementById("selectConstraints").innerHTML = text;
@@ -1136,7 +1108,6 @@ $scope.CanvasState = function(canvas) {
 				$scope.constraints[cc].inUse = true;
 		}
 		$scope.createGameState = false;
-		$scope.startGameState = true;
 	
 		//deck of cards
 		$scope.deck =[];
@@ -1160,7 +1131,35 @@ $scope.CanvasState = function(canvas) {
         $scope.myId = 0;
 		$scope.players[$scope.myId].name = document.getElementById("name").value;
         
-        //TODO: Andrei: send data to server (send: document.getElementById("selectplayers").value, $scope.deck[i].colorId, $scope.deck[i].constraintId)
+        $scope.newGame();
+    };
+        
+    //TODO: Andrei: send data to server (send: document.getElementById("selectplayers").value, $scope.deck[i].colorId, $scope.deck[i].constraintId)
+    $scope.configNewGame = function(gameURI) {
+        // Send to server
+        var query = '';
+        for (var i=0; i<document.getElementById("selectplayers").value; i++) {
+          query += 'INSERT DATA { <#player'+i+'> <'+RDF("type").value+'> <'+KANG("Player").value+'> . } ;\n';
+          query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerId').value+'> "'+i+'" . } ;\n';
+          if (i == 0) {
+            query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerName').value+'> "'+document.getElementById("name").value+'" . } ;\n';
+            query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerJoined').value+'> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> . }';
+          }
+          if (i <= document.getElementById("selectplayers").value - 1) {
+            query += " ;\n";
+          }
+        }
+        console.log(query);
+
+        $scope.sendSPARQLPatch(gameURI, query).then(function(status) {
+          if (status == 'success') {
+            $scope.gameURI = gameURI;
+            $scope.waitForPlayersState = true;
+            $scope.$apply();
+            $scope.connectToSocket();
+          }
+        });
+        
         
 	}
 	
