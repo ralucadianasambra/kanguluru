@@ -1,0 +1,65 @@
+body {
+    background-color: #000000;
+    color: #CCCCCC;
+}
+
+.flex {
+    display: flex!important;
+}
+
+.top {
+    padding: 10px !important;
+    background-color: #333333;
+}
+
+td {
+    padding: 0px !important;
+	text-align: center !important;
+    font-size: 9px;
+    color: #888888;
+}
+
+.board {
+    padding: 10px !important;
+    min-height: 100%;
+    height: auto;
+    background-color: #444444;
+}
+
+.btn {
+    margin-bottom: 0px !important;
+    background-color: #1E90FF!important;
+}
+.btn:hover {
+    background-color: #4FA6FA!important;
+}
+
+.btn-large{
+    background-color: #1E90FF;
+}
+
+.mr-20 {
+    margin-right: 20px;
+}
+
+.mt-30 {
+    margin-top: 30px;
+}
+
+#selectplayers {
+    color: #000;
+    display: block;
+}
+
+.strikethrough {
+    text-decoration: line-through;
+}
+
+.right{
+    text-align: right;
+}
+
+.row {
+  margin-bottom: 5px;
+}
+

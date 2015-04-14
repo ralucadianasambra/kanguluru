@@ -1,0 +1,11 @@
+{
+  "name": "Shamblokus",
+  "version": "0.0.1",
+  "devDependencies": {},
+  "dependencies": {
+    "angularjs": "~1.3.14",
+    "materialize": "~0.95.3",
+    "angular-ui": "~0.4.0",
+    "angular-ui-router": "~0.2.13"
+  }
+}

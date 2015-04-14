@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html ng-app="Kanguluru">
+<head>
+    <title>Kanguluru</title>
+    <style>
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak, .ng-hide {
+          display: none !important;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="bower_components/materialize/dist/css/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+</head>
+
+<body ng-cloak ng-controller="Main">
+
+    <!-- Debug -->
+    <div class="row center" ng-show="true">
+<!--        <div class="col s12" id = "debug">-->
+		</div>
+    </div>
+    
+    <!-- Create new game -->
+     <div class="row valigh" ng-show="createGameState">
+		<div class="col s2 valigh-wrapper">
+			<select ng-model="nrPlayers" id="selectplayers">
+				<option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
+			</select>
+		</div> 
+
+		<div  class="col s2" id = "selectConstraints">
+		</div>
+
+        <div class="col s3 valign input-field">
+			<input id="name" type="text">
+            <label for="name">Name: </label>
+		</div>
+		
+        <div class="col s3 valign">
+			<button class="btn" type="submit" ng-click="createGame()">Create game</button>
+		</div>
+
+    </div>
+ 
+    <!-- New user joining -->
+     <div class="row center" ng-show="personalizeUserState">
+        <div class="col s12">Personalize User</div>
+    </div>
+     
+    <!-- Wait for everybody to get ready -->
+     <div class="row center" ng-show="waitForPlayersState">
+        <div class="col s12">Wait for other players</div>
+        <div class="col s12"><button class="btn" type="button">Start first round</button></div>
+    </div> 
+
+    <!-- Constraints -->
+    <div class="row center" ng-show="playState || resultsState || startGameState">
+        <div class="col s12" id = "constraintsDiv">Table with constraints</div>
+    </div>
+    
+    <!-- Start game -->
+    <div class="row center" ng-show="startGameState">
+        <button class="btn" type="button" ng-click="startGame()">Start game</button>
+    </div>
+    
+	<!-- Round results -->
+    <div class="row center" ng-show="resultsState">
+        <button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState">New round</button>
+        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>
+    </div>
+	
+	<!-- Game results -->
+    <div class="row center" ng-show="gameEndState">
+        <div class="col s12" id="endGameDiv">End game div</div>
+<!--        TODO: link as a variable! set onload()-->
+<!--        <div><a href="ralucadianasambra.github.io/Shamblokus"><button class="btn" type="button">Prepare new game</button></a></div>-->
+    </div>
+	
+    <!-- Playing area -->
+    <div class="row center" ng-show="playState || resultsState">
+            <canvas id="game" style="z-index: 1;">
+                Your browser does not support HTML5 Canvas!
+            </canvas>
+    </div>
+    
+	<div id="sound" ng-show=false></div>
+    <div ng-show=false>
+		<img id="boardImg" src="images/board.png">
+		<img id="resultBoardImg" src="images/board.png">
+		<img id="cardImg" src="images/board.png">
+	</div>
+
+
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/materialize/dist/js/materialize.min.js"></script>
+    <script type="text/javascript" src="bower_components/angularjs/angular.min.js"></script>
+    <script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script type="text/javascript" src="bower_components/angular-ui/build/angular-ui.min.js"></script>
+    <script type="text/javascript" src="js/rdflib.js"></script>
+    <script type="text/javascript" src="js/kanguluru.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
+
+</html>
