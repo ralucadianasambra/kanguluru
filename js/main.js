@@ -70,6 +70,7 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
 	$scope.soundOn = false;
 	$scope.players = [];
     $scope.constraintsColorsStack = [];
+    $scope.constraintsLoopReturn = false;
  
 
   $scope.connectToSocket = function() {
@@ -442,8 +443,10 @@ $scope.CanvasState = function(canvas) {
 					fontHeight = Math.floor($scope.resultBoardImg.height/10);
 					ctx.font = "bold "+fontHeight+"px Verdana";
 					ctx.fillStyle = "rgba(200, 250, 150, 1)";
-					var text = $scope.players[cpl].name + ": " + $scope.players[cpl].score + " (+"+$scope.players[cpl].newPoints+")";
-					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 + fontHeight/2);
+					var text = $scope.players[cpl].name + ": " ;
+					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 - fontHeight/5);
+                    var text = $scope.players[cpl].score + " (+"+$scope.players[cpl].newPoints+")";
+					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 + fontHeight*6/5);
 				}
 						   
 				this.valid = true;
@@ -605,9 +608,9 @@ $scope.CanvasState = function(canvas) {
             if(i != winnerId){
                 if($scope.players[i].score == winnerScore )
                     message += "<h3>" + $scope.players[i].name + " wins too!<img src=\"images/winnerCup.png\" style=\"height:70px; vertical-align: middle;\"></h3>";
-                else if($scope.players[i].score > winnerScore - 5)
+                else if($scope.players[i].score > winnerScore - 3)
                     message += "<h5>" + $scope.players[i].name + ", that was really close!</h5>";
-                else if($scope.players[i].score > winnerScore - 15)
+                else if($scope.players[i].score > winnerScore - 6)
                     message += "<h5>" + $scope.players[i].name + ", not bad!</h5>";
                 else
                     message += "<h5>" + $scope.players[i].name + ", you need more practice!</h5>";
@@ -682,9 +685,11 @@ $scope.CanvasState = function(canvas) {
 	
 	$scope.distributeCards = function(){
 		$scope.canvasState.valid = false;
+        $scope.cards = [];
 		if($scope.deck.length >= $scope.pieces.length){
 			for(var i = 0; i < $scope.pieces.length; i++){
 				var cCard = $scope.deck[0];
+                $scope.cards.push(cCard);
 				for(var j = 0; j < $scope.pieces.length; j++){
 					if( $scope.pieces[j].colorId == i){
 						$scope.pieces[j].card = cCard;
@@ -739,11 +744,6 @@ $scope.CanvasState = function(canvas) {
 		$scope.players[$scope.myId].pieces = $scope.pieces;
         $scope.players[$scope.myId].round = $scope.round;
         $scope.testIfNewRoundCanStart();
-		if($scope.round == $scope.noOfRounds){
-            $scope.gameEndState = true;
-			$scope.endGame();
-            $scope.$apply();
-		}
 		$scope.$apply();
         
         //send data to the server
@@ -774,12 +774,18 @@ $scope.CanvasState = function(canvas) {
 	$scope.checkConstraint = function(piece){
         //avoid loops like A wants same as B and B wants same as A
         if(piece.card.constraintId>9){
-            for(var i = 0; i < $scope.constraintsColorsStack.length; i++)
-                if($scope.constraintsColorsStack[i] == piece.card.colorId){      //color already in the color stack ==> loop ==> impossible
-                    console.log("Loop detected: ", $scope.constraintsColorsStack, piece.card.colorId);
-                    return true;
-                }
-            $scope.constraintsColorsStack.push(piece.card.colorId);
+            if($scope.constraintsColorsStack.length > 0){
+                for(var i = 0; i < $scope.constraintsColorsStack.length; i++)
+                    if($scope.constraintsColorsStack[i] == piece.card.colorId){      //color already in the color stack ==> loop ==> impossible
+                        console.log("Loop detected: ", $scope.constraintsColorsStack, piece.card.colorId);
+                        $scope.constraintsLoopReturn = true;
+                        return true;
+                    }
+                $scope.constraintsColorsStack.push(piece.card.colorId);
+            }
+            else
+                $scope.constraintsColorsStack.push(piece.colorId);
+            
             console.log($scope.constraintsColorsStack);
         }
 		//happy
@@ -917,9 +923,11 @@ $scope.CanvasState = function(canvas) {
                     if($scope.pieces[cp].colorId == piece.card.colorId)
                         card = $scope.pieces[cp].card;
 				}
+                var originalCard = piece.card;
                 piece.card = card;      //change card with the card of the other piece
-                return $scope.checkConstraint(piece);
-                
+                var test = $scope.checkConstraint(piece);
+                piece.card = originalCard;
+				return test;
             }
 		}
 		
@@ -947,7 +955,13 @@ $scope.CanvasState = function(canvas) {
 		for(var cp = 0; cp < $scope.pieces.length; cp++){
 			if($scope.pieces[cp].placeId != -1){
                 $scope.constraintsColorsStack = [];
-				$scope.pieces[cp].ok = $scope.checkConstraint($scope.pieces[cp]);
+                var test = $scope.checkConstraint($scope.pieces[cp]);
+                if($scope.constraintsLoopReturn){
+                    $scope.pieces[cp].ok = true;
+                    $scope.constraintsLoopReturn = false;
+                }
+                else
+                    $scope.pieces[cp].ok = test;
 			}
 		}
 	}
