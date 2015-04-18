@@ -1132,10 +1132,10 @@ $scope.CanvasState = function(canvas) {
     $scope.joinGame = function(){
         $scope.connectToSocket();
         var name = "";
-        if(document.getElementById("name").value.length == 0)
+        if(document.getElementById("nameJU").value.length == 0)
             name = "Player " + $scope.myId;
         else
-            name = document.getElementById("name").value;
+            name = document.getElementById("nameJU").value;
         
         //send data to server (name, join)
         var query = '';
