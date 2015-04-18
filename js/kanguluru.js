@@ -38,6 +38,7 @@ function Player(id){
     this.name = "";
     this.id = id;
 	this.pieces = [];
+    this.round = 0;
 }
 
 

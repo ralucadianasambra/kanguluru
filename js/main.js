@@ -51,8 +51,8 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     // init
     $scope.providedBoard = 'https://shamblokus.databox.me/Games/';
     $scope.appuri = window.location.origin +window.location.pathname+'#/';
-    $scope.selectPlayers = [{id:1, name:"1 player"}, {id:2, name:"2 players"}, {id:3, name:"3 players"}, {id:4, name:"4 players"}];
-    $scope.defaultNrPlayers = 1;
+    $scope.selectPlayers = [{id:1, name:"1 player"}, {id:2, name:"2 players"}, {id:3, name:"3 players"}, {id:4, name:"4 players"}, {id:5, name:"5 players"}, {id:6, name:"6 players"}, {id:7, name:"7 players"}, {id:8, name:"8 players"}];
+    $scope.defaultNrPlayers = 3;
     $scope.playersJoined = 0;
     $scope.myId = 0;
     
@@ -61,12 +61,15 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     $scope.personalizeUserState = false;
     $scope.waitForPlayersState = false;
     $scope.startGameState = false;
+    $scope.gameCanStartState = false;
     $scope.resultsState = false;
+    $scope.newRoundCanStartState = false;
     $scope.playState = false;
 	$scope.gameEndState = false;
 	$scope.playing = false;
 	$scope.soundOn = false;
 	$scope.players = [];
+    $scope.constraintsColorsStack = [];
  
 
   $scope.connectToSocket = function() {
@@ -114,79 +117,12 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     })
   };
 
-//  $scope.createGameSpace = function(uri) {
-//    return new Promise(function(resolve) {
-//      $http({
-//        method: 'PUT',
-//        url: uri,
-//        headers: {
-//          'Content-Type': 'text/turtle',
-//          'Link': '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"' 
-//        },
-//        withCredentials: true,
-//        data: ''
-//      }).success(function(data, status, headers) {
-//        console.log("Created new game space at "+uri);
-//        $scope.userProfile.boardsURI = uri;
-//        $scope.configBoardSpace();
-//        resolve(headers('Location'));
-//      }).error(function(data, status, headers) {
-//        console.log('Could not create board space: HTTP '+status);
-//        resolve('');
-//      });
-//    });
-//  }
 
-  // configure where to store all the games
-//  $scope.configBoardSpace = function () {
-//    if ($scope.userProfile.storage && $scope.userProfile.storage.length > 0) {
-//      var shamURI = $scope.userProfile.storage+'shamblokus/';
-//
-//      $http({
-//      method: 'HEAD',
-//      url: shamURI,
-//      withCredentials: true
-//      }).success(function(data, status, headers) {
-//        console.log("Found games space "+shamURI);        
-//        $scope.userProfile.boardsURI = shamURI;
-//        $scope.saveCredentials();
-//      }).error(function(data, status, headers) {
-//        if (status == 404) {
-//          console.log("Game space doesn't exist, creating..");
-//          $scope.createGameSpace(shamURI);
-//        }
-//      });
-//    } else {
-//      console.log("It appears you don't have storage space");
-//    }
-//  };
-
-  
-
-  // initialize by retrieving user info from sessionStorage
-  // retrieve from sessionStorage
-//  if (sessionStorage.getItem($scope.appuri)) {
-//    var app = JSON.parse(sessionStorage.getItem($scope.appuri));
-//    if (app.userProfile) {
-//      if (!$scope.userProfile) {
-//        $scope.userProfile = {};
-//      }
-//      $scope.userProfile = app.userProfile;
-//      $scope.authenticated = true;
-//    } else {
-//      // clear sessionStorage in case there was a change to the data structure
-//      sessionStorage.removeItem($scope.appuri);
-//    }
-//  }
-
-  // $scope.prepareGame = function() {
-    // $scope.userProfile.boardsURI = $scope.providedBoard;
-  // };
 
   $scope.newGame = function() {
     var now = new Date().getTime();
     var g = new $rdf.graph();
-    g.add($rdf.sym(''), RDF("type"), KANG("Shamblokus"));
+    g.add($rdf.sym(''), RDF("type"), KANG("Kanguluru"));
     
     for (var i=0; i < $scope.deck.length; i++) {
         g.add($rdf.sym('#deck'+i), RDF("type"), KANG('Deck'));
@@ -214,175 +150,157 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     });
   };
 
+    
+    
 
-//  $scope.gameUpdated = function(gameURI) {
-//    console.log("Received updated game state from: "+gameURI);
-//
-//    // fetch the game state (and board) from the server
-//    var g = $rdf.graph();
-//    var f = $rdf.fetcher(g, TIMEOUT);
-//
-//    f.nowOrWhenFetched(gameURI,undefined,function(ok, body, xhr) {
-//      if (!ok) {
-//        console.log('Could not fetch game state: HTTP '+xhr.status);
-//      } else {
-//        // get activePlayerId
-//        var activePlayerId = g.any($rdf.sym(gameURI), SHAM('activePlayer'));
-//        if (activePlayerId) {
-//            $scope.activePlayerId = parseInt(activePlayerId.value, 10);
-//            console.log("Received active player ID: ", $scope.activePlayerId);
-//        }
-//
-//        // get all players
-//        var players = g.statementsMatching(undefined, RDF("type"), SHAM("Player"));
-//        if (!$scope.nrPlayers) {
-//          $scope.nrPlayers = players.length;
-//        }
-//        if ($scope.playersJoined < $scope.nrPlayers) {
-//          players.forEach(function(player){
-//            var joined = g.any(player.subject, SHAM("playerJoined"));
-//            var name = g.any(player.subject, SHAM("playerName"));
-//            var pid = g.any(player.subject, SHAM("playerId"));
-//            if (pid !== undefined && pid.value) {
-//              pid = parseInt(pid.value, 10);
-//              if (!$scope.players) {
-//                $scope.players = [];
-//              }
-//              $scope.players[pid] = new Player([]);
-//              var colors = g.any(player.subject, SHAM("playerColors"));
-//              if (colors && colors.value) {
-//                $scope.players[pid].colors = colors.value.split(',')
-//              }
-//              $scope.players[pid].name = (name && name.value)?name.value:'';
-//              if (joined && (joined.value == '1' || joined.value == 'true')) {
-//                $scope.playersJoined++;
-//              }
-//            }
-//          });
-//        }
-//
-//        // get board pieces
-//        var playedPieces = [];
-//        var pieces = g.statementsMatching(undefined, RDF("type"), SHAM("Piece"));
-//        pieces.forEach(function(piece) {
-//          var id = g.any(piece.subject, SHAM("colorId")).value;
-//          var sq = g.any(piece.subject, SHAM("squares")).value.split(',');
-//          if(sq == ""){
-//              playedPieces.push({
-//                colorId: id,
-//                squaresIds: []
-//              });
-//          }
-//          else{
-//              playedPieces.push({
-//                colorId: id,
-//                squaresIds: sq
-//              });
-//          }
-//        });
-//
-//        
-//        var started = g.any($rdf.sym(gameURI), SHAM("gameStarted"));
-//        if ($scope.playersJoined == $scope.nrPlayers && started === undefined) {
-//            $scope.boardReady = true;
-//            $scope.waitingForStart = false;
-//
-//
-//            // also init the board for the first player
-//            if ($scope.myId === 0) {
-//              $scope.initGame();
-//            }
-//        }
-//
-//        if (started) {
-//          $scope.gameStarted = true;
-//        }
-//        $scope.$apply();
-//      }
-//    });
-//  };
+$scope.gameUpdated = function(gameURI) {
+    console.log("Received updated game state from: "+gameURI);
 
-  // save bags + pieces on the server for all players and init board
-//  $scope.waitForPlayers = function() {
-//    $scope.personalizeUser = false;
-//    $scope.waitingForStart = true;
-//
-//    // create board for other players
-//    if ($scope.myId !== 0) {
-//      $scope.initGame();
-//    }
-//    // start listening for updates
-//    $scope.connectToSocket();
-//
-//    $scope.$apply();
-//    console.log("Waiting for other players...");    
-//  }
+    // fetch the game state from the server
+    var g = $rdf.graph();
+    var f = $rdf.fetcher(g, TIMEOUT);
 
-//  $scope.joinGame = function () {
-//    var query = '';
-//    var setJoined = new $rdf.st(
-//      $rdf.sym('#player'+$scope.myId), 
-//      SHAM("playerJoined"),
-//      $rdf.lit('true', undefined, $rdf.sym('http://www.w3.org/2001/XMLSchema#boolean'))
-//    );
-//    var setName = new $rdf.st(
-//        $rdf.sym('#player'+$scope.myId),
-//        SHAM('playerName'),
-//        $rdf.lit($scope.myName)
-//      );
-//
-//    query += 'INSERT DATA { ' + setJoined.toNT() + " } ;\n";
-//    query += 'INSERT DATA { ' + setName.toNT() + '}';
-//    $scope.sendSPARQLPatch($scope.gameURI, query).then(function(status) {
-//      if (status == 'success') {
-//        $scope.waitForPlayers();
-//      }
-//    });
-//  };
+    f.nowOrWhenFetched(gameURI,undefined,function(ok, body, xhr) {
+        if (!ok) {
+            console.log('Could not fetch game state: HTTP '+xhr.status);
+        } 
+        else {
+
+            // get all players
+            var players = g.statementsMatching(undefined, RDF("type"), KANG("Player"));
+            
+            //no players in scope yet ==> create players and deck
+            if(!$scope.players || $scope.players.length == 0){
+                //create players
+                for(var cp = 0; cp < players.length; cp++)
+                    $scope.players.push(new Player(cp));
+                
+                //create deck
+                $scope.deck = [];
+                var deck = g.statementsMatching(undefined, RDF("type"), KANG("Deck"));
+                for(cc = 0; cc < deck.length; cc++)
+                    $scope.deck.push(new Card(0, 0));
+                for(cc = 0; cc < deck.length; cc++){
+                    var card = deck[cc];
+                    var colorId = g.any(card.subject, KANG("colorId"));
+                    var constraintId = g.any(card.subject, KANG("constraintId"));
+                    var id = g.any(card.subject, KANG("id"));
+                    colorId = parseInt(colorId.value, 10);
+                    constraintId = parseInt(constraintId.value, 10);
+                    id = parseInt(id.value, 10);
+                    $scope.deck[id].constraintId = constraintId;
+                    $scope.deck[id].colorId = colorId;
+                }
+                $scope.prepareGame();
+            }
+
+            //still waiting for players to join
+            if(!$scope.gameCanStartState && ($scope.personalizeUserState || $scope.waitForPlayersState || $scope.startGameState)){   
+                var cnt = 0;
+                for(var cp = 0; cp < players.length; cp++){
+                    var player = players[cp];
+                    var joined = g.any(player.subject, KANG("playerJoined"));
+                    var name = g.any(player.subject, KANG("playerName"));
+                    var pid = g.any(player.subject, KANG("playerId"));
+                    pid = parseInt(pid.value, 10);
+
+                    if ($scope.players && pid < $scope.players.length) {
+                        if (joined && (joined.value == '1' || joined.value == 'true')){
+                            cnt ++;
+                            if($scope.players[pid].name == ""){
+                                $scope.players[pid].name = name.value;
+                        }
+                        }
+                    }
+                }
+                //test if all players joined
+                if(cnt == $scope.players.length){
+                    $scope.gameCanStartState = true;
+                    $scope.waitForPlayersState = false;
+                    $scope.$apply();
+                }
+            }
+
+            // get board pieces
+            var pieces = g.statementsMatching(undefined, RDF("type"), KANG("playerPieces"));
+            for (var i = 0; i < pieces.length; i++){
+                piece = pieces[i];
+                var roundId = g.any(piece.subject, KANG("roundId")).value;
+                if (roundId == $scope.round){
+                    var playerId = g.any(piece.subject, KANG("playerId")).value;
+                    if(playerId != $scope.myId && $scope.players[playerId].round == $scope.round - 1){
+                        $scope.players[playerId].round = $scope.round;
+                        $scope.players[playerId].score = g.any(piece.subject, KANG("score")).value;
+                        $scope.players[playerId].newPoints = g.any(piece.subject, KANG("newPoints")).value;
+                        var playedPieces = g.any(piece.subject, KANG("places")).value.split(',');
+                        var oks = g.any(piece.subject, KANG("oks")).value.split(',');
+                        $scope.players[playerId].pieces = [];
+                        for (var cp = 0; cp < playedPieces.length; cp++){
+                            $scope.players[playerId].pieces.push(new Piece(cp, cp, 0, 0, 0));
+                            $scope.players[playerId].pieces[cp].placeId = playedPieces[cp];
+                            if(oks[cp] == 1)
+                                $scope.players[playerId].pieces[cp].ok = true;
+                            else
+                                $scope.players[playerId].pieces[cp].ok = false;
+                        }
+                        $scope.canvasState.valid = false;
+                        
+//                        var test = true;
+//                        for(var cp = 0; cp < $scope.players.length; cp++){
+//                            console.log("Player", cp, "Round", $scope.players[cp].round, "scope.round", $scope.round);
+//                            if($scope.players[cp].round < $scope.round){
+//                                test = false;
+//                                console.log("Huston!");
+//                            }
+//                        }
+//                        $scope.newRoundCanStartState = test;
+//                        console.log ("$scope.newRoundCanStartState", $scope.newRoundCanStartState);
+                        $scope.testIfNewRoundCanStart();
+                        $scope.$apply();
+                    }
+                }
+            }
+        }
+    });
+};
+
+ 
+    $scope.testIfNewRoundCanStart = function(){
+        var test = true;
+        for(var cp = 0; cp < $scope.players.length; cp++){
+            //console.log("Player", cp, "Round", $scope.players[cp].round, "scope.round", $scope.round);
+            if($scope.players[cp].round < $scope.round){
+                test = false;
+                //console.log("Huston!");
+            }
+        }
+        
+        //test if the end of the game (everybody finished)
+        if(test && $scope.round == $scope.noOfRounds){
+            $scope.gameEndState = true;
+			$scope.endGame();
+            $scope.$apply();
+		}
+        else $scope.newRoundCanStartState = test;
+        //console.log ("$scope.newRoundCanStartState", $scope.newRoundCanStartState);
+    }
 
 
 
-//    $scope.endTurn = function(lastPlayedPiece) {
-//
-//    $scope.myPlayer.bag[$scope.activeBagId].setAvailability(false);
-//    $scope.myPlayer.bag[$scope.activeBagId].setStandBy(true);
-//    $scope.activeBagId = ($scope.activeBagId+1)% $scope.myPlayer.bag.length;
-//    $scope.myPlayer.bag[$scope.activeBagId].setAvailability(true);
-//      
-//    var lastPlayerId = $scope.activePlayerId;
-//    $scope.activePlayerId = ($scope.activePlayerId + 1) % $scope.players.length;
-//
-//    var query = '';
-//    // next player
-//    query += 'DELETE DATA { <'+$scope.gameURI+'> <'+SHAM("activePlayer").value+'> "'+ lastPlayerId +'" . } ;\n';
-//    query += 'INSERT DATA { <'+$scope.gameURI+'> <'+SHAM("activePlayer").value+'> "'+ $scope.activePlayerId +'" . }';
-//      // piece
-//    if (lastPlayedPiece) {
-//      query += " ;\n";
-//      var pieceID = '#'+Date.now();
-//      query += 'INSERT DATA { <'+pieceID+'> <'+RDF('type').value+'> <'+SHAM("Piece").value+'> . } ;\n';
-//      query += 'INSERT DATA { <'+pieceID+'> <'+SHAM('colorId').value+'> "'+lastPlayedPiece.colorId+'" . } ;\n';
-//      query += 'INSERT DATA { <'+pieceID+'> <'+SHAM('squares').value+'> "'+lastPlayedPiece.squaresIds.toString()+'" . }';
-//    }
-//    //@@TODO end timer
-//
-//    $scope.sendSPARQLPatch($scope.gameURI, query);
-//  }
-
-  // check if we came through link (this is ugly)
-//  $scope.state = $state;
-//  $scope.$watch('state.params', function(newVal, oldVal) {
-//    if (newVal.game && newVal.pid && newVal.colors && !$scope.myPlayer) {
-//      $scope.personalizeUser = true;
-//      $scope.gameURI = unescape(decodeURIComponent(window.atob($state.params.game)));
-//      $scope.myId = $state.params.pid;
-//      $scope.myName = '';
-//      $scope.myPlayer = new Player($state.params.colors.split(','))
-//      $scope.activeBagId = 0;
-//      $scope.myPlayer.bag[$scope.activeBagId].setAvailability(true);
-//
-//    }
-//  });
+    // check if we came through link (this is ugly)
+    $scope.state = $state;
+    $scope.$watch('state.params', function(newVal, oldVal) {
+        if (newVal.game && newVal.pid) {
+        $scope.personalizeUserState = true;
+        $scope.createGameState = false;
+        $scope.gameURI = unescape(decodeURIComponent(window.atob($state.params.game)));
+        $scope.myId = $state.params.pid;
+        //$scope.myName = '';
+        //$scope.myPlayer = new Player($state.params.colors.split(','))
+        //$scope.activeBagId = 0;
+        //$scope.myPlayer.bag[$scope.activeBagId].setAvailability(true);
+        }
+    });
 
 //  $scope.$watch('userProfile.name', function(newVal, oldVal) {
 //    if (newVal && newVal !== undefined && newVal.length > 0) {
@@ -495,35 +413,37 @@ $scope.CanvasState = function(canvas) {
 					Y = 30;
 					ctx.drawImage($scope.resultBoardImg, X, Y, $scope.resultBoardImg.width, $scope.resultBoardImg.height);
 
+                    //draw pieces
+					for(var cp = 0; cp < $scope.players[cpl].pieces.length; cp++){
+                        if($scope.players[cpl].round == $scope.round){
+                            var cPiece = $scope.players[cpl].pieces[cp];
+                            if(cPiece.placeId != -1){cPiece.x = X + $scope.resultBoardImg.width * $scope.places[cPiece.placeId].xp;
+                                cPiece.y = Y + $scope.resultBoardImg.height *$scope.places[cPiece.placeId].yp;
+                                cPiece.radius = $scope.radius * $scope.resultBoardImg.width/ $scope.boardImg.width;
+                                cPiece.draw(this.ctx, $scope.colors);
+                                if(!cPiece.ok){
+                                    ctx.strokeStyle = "rgba(150, 0, 0, 0.8)";
+                                    ctx.lineWidth=5;
+                                    ctx.beginPath();
+                                    ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y - cPiece.radius);
+                                    ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y + cPiece.radius);
+                                    ctx.stroke();
+                                    ctx.beginPath();
+                                    ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y - cPiece.radius);
+                                    ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y + cPiece.radius);
+                                    ctx.stroke();
+                                }
+                                cPiece.radius = $scope.radius
+                            }
+                        }
+                    }
+
                     //write score
 					fontHeight = Math.floor($scope.resultBoardImg.height/10);
 					ctx.font = "bold "+fontHeight+"px Verdana";
 					ctx.fillStyle = "rgba(200, 250, 150, 1)";
 					var text = $scope.players[cpl].name + ": " + $scope.players[cpl].newPoints + " ("+$scope.players[cpl].score+")";
 					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 + fontHeight/2);
-					
-					//draw pieces
-					for(var cp = 0; cp < $scope.players[cpl].pieces.length; cp++){
-                        var cPiece = $scope.players[cpl].pieces[cp];
-						if(cPiece.placeId != -1){cPiece.x = X + $scope.resultBoardImg.width * $scope.places[cPiece.placeId].xp;
-                            cPiece.y = Y + $scope.resultBoardImg.height *$scope.places[cPiece.placeId].yp;
-                            cPiece.radius = $scope.radius * $scope.resultBoardImg.width/ $scope.boardImg.width;
-                            cPiece.draw(this.ctx, $scope.colors);
-                            if(!cPiece.ok){
-								ctx.strokeStyle = "rgba(150, 0, 0, 0.8)";
-								ctx.lineWidth=5;
-								ctx.beginPath();
-								ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y - cPiece.radius);
-								ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y + cPiece.radius);
-								ctx.stroke();
-								ctx.beginPath();
-								ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y - cPiece.radius);
-								ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y + cPiece.radius);
-								ctx.stroke();
-							}
-                            cPiece.radius = $scope.radius
-						}
-					}
 				}
 						   
 				this.valid = true;
@@ -602,7 +522,6 @@ $scope.CanvasState = function(canvas) {
 
     // double click
     canvas.addEventListener('dblclick', function(e) {
-        console.log(myState.dragging);
         if(myState.dragging)
             canvas.deselectPiece();
         else
@@ -636,26 +555,6 @@ $scope.CanvasState = function(canvas) {
     setInterval(function() { myState.draw(); }, myState.interval);
 }
 
-
-//  $scope.initGame = function () {
-//    $scope.canvas = new $scope.CanvasState(document.getElementById('game'), $scope.myPlayer);
-//    $scope.canvas.valid = false;
-//    $scope.myPlayer.rearrangePieces();
-//  }
-
-//  $scope.startGame = function() {
-//    $scope.gameStarted = true;
-//    $scope.boardReady = false;
-//    $scope.activePlayerId = 0;
-//    $scope.activeBagId = 0;
-//    $scope.myPlayer.bag[$scope.activeBagId].setAvailability(true);
-//    $scope.myPlayer.bag[$scope.activeBagId].setStandBy(false);
-//    $scope.canvas.valid = false;
-//
-//    // set gameStarted
-//    var query = 'INSERT DATA { <'+$scope.gameURI+'> <'+SHAM("gameStarted").value+'> "'+ Date.now() +'" . }';
-//    $scope.sendSPARQLPatch($scope.gameURI, query);
-//  }
   
     $scope.countDown = function(){
 		$scope.time--; 
@@ -681,7 +580,7 @@ $scope.CanvasState = function(canvas) {
 	}
   
 	$scope.startCountdouwn = function(){
-		$scope.time = 5   ;
+		$scope.time = 42   ;
 		$scope.countDown();
 		$scope.countDownPtr = setInterval(function(){ $scope.countDown()}, 1000);
 	}
@@ -798,7 +697,10 @@ $scope.CanvasState = function(canvas) {
                     text += "<img id=\"cardImg\" src=\"images/CardsResize/"+cCard.constraintId+".png\" width = \"" +$scope.cardImg.width+"\">";
                 else
                     text += "<img id=\"cardImg\" src=\"images/CardsResize/"+cCard.constraintId+"_"+cCard.colorId+".png\" width = \"" +$scope.cardImg.width+"\">";
-				text += "<br><font = 10px>"+$scope.constraints[cCard.constraintId].name + " " + $scope.colors[cCard.colorId].name+"</font>";		////TODO: images instead of text
+                if(cCard.constraintId < 5)
+				    text += "<br><font = 10px>"+$scope.constraints[cCard.constraintId].name + "</font>";
+                else
+                    text += "<br><font = 10px>"+$scope.constraints[cCard.constraintId].name + " " + $scope.colors[cCard.colorId].name+"</font>";
 				document.getElementById(i).innerHTML = text;
 			}
 		}
@@ -807,6 +709,8 @@ $scope.CanvasState = function(canvas) {
 	}
 	
     $scope.startGame = function(){
+        $scope.waitForPlayersState = false;
+        $scope.gameCanStartState = false;
         $scope.startGameState = false;
         $scope.startRound();
     }
@@ -821,6 +725,7 @@ $scope.CanvasState = function(canvas) {
 			$scope.playing = true;
 			$scope.arrangePieces();
             $scope.emptyPlaces();
+            $scope.newRoundCanStartState = false;
             //$scope.$apply();
 		}
 	}
@@ -832,16 +737,51 @@ $scope.CanvasState = function(canvas) {
 		$scope.computeScore();
 		$scope.canvasState.valid = false;
 		$scope.players[$scope.myId].pieces = $scope.pieces;
+        $scope.players[$scope.myId].round = $scope.round;
+        $scope.testIfNewRoundCanStart();
 		if($scope.round == $scope.noOfRounds){
             $scope.gameEndState = true;
 			$scope.endGame();
             $scope.$apply();
 		}
 		$scope.$apply();
-		//draw result boards
+        
+        //send data to the server
+
+        var query = '';
+        var playerId = $scope.myId;
+        var roundId = $scope.round;
+        var id = playerId + '_'+ roundId;
+        var places = [];
+        var oks = [];
+        for (var i = 0; i < $scope.pieces.length; i++){
+            places[$scope.pieces[i].colorId] = $scope.pieces[i].placeId;
+            if($scope.pieces[i].ok)
+                oks[$scope.pieces[i].colorId] = 1;
+            else
+                oks[$scope.pieces[i].colorId] = 0;
+        }
+        query += 'INSERT DATA { <'+id+'> <'+RDF('type').value+'> <'+KANG("playerPieces").value+'> . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('playerId').value+'> "'+playerId+'" . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('roundId').value+'> "'+roundId+'" . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('score').value+'> "'+$scope.players[playerId].score+'" . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('newPoints').value+'> "'+$scope.players[playerId].newPoints+'" . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('places').value+'> "'+places.toString()+'" . } ;\n';
+        query += 'INSERT DATA { <'+id+'> <'+KANG('oks').value+'> "'+oks.toString()+'" . }';
+        $scope.sendSPARQLPatch($scope.gameURI, query);
 	}
 	
 	$scope.checkConstraint = function(piece){
+        //avoid loops like A wants same as B and B wants same as A
+        if(piece.card.constraintId>9){
+            for(var i = 0; i < $scope.constraintsColorsStack.length; i++)
+                if($scope.constraintsColorsStack[i] == piece.card.colorId){      //color already in the color stack ==> loop ==> impossible
+                    console.log("Loop detected: ", $scope.constraintsColorsStack, piece.card.colorId);
+                    return true;
+                }
+            $scope.constraintsColorsStack.push(piece.card.colorId);
+            console.log($scope.constraintsColorsStack);
+        }
 		//happy
 		if(piece.card.constraintId == 0){
 			return true;
@@ -1005,9 +945,10 @@ $scope.CanvasState = function(canvas) {
 	
 	$scope.checkPiecesPlacement = function(){
 		for(var cp = 0; cp < $scope.pieces.length; cp++){
-			if($scope.pieces[cp].placeId != -1){	
+//			if($scope.pieces[cp].placeId != -1){
+                $scope.constraintsColorsStack = [];
 				$scope.pieces[cp].ok = $scope.checkConstraint($scope.pieces[cp]);
-			}
+	//		}
 		}
 	}
 	
@@ -1018,8 +959,8 @@ $scope.CanvasState = function(canvas) {
 				score++;
 			console.log($scope.colors[$scope.pieces[cp].colorId].name, "wants", $scope.constraints[$scope.pieces[cp].card.constraintId].name, $scope.colors[$scope.pieces[cp].card.colorId].name, $scope.pieces[cp].ok);
 		}
-        $scope.players[$scope.myId].newPoints = score;
-		$scope.players[$scope.myId].score += score;
+		$scope.players[$scope.myId].newPoints = score;
+        $scope.players[$scope.myId].score += score;
 	}
 
 
@@ -1034,10 +975,10 @@ $scope.CanvasState = function(canvas) {
 
 	var canvasVisibleHeight = window.innerHeight - $scope.canvas.offsetTop;
 	tmp = $scope.boardImg.width / $scope.boardImg.height;
-	$scope.boardImg.height = Math.min(canvasVisibleHeight * 0.6, window.innerHeight/3);
+	$scope.boardImg.height = Math.max(canvasVisibleHeight * 0.6, window.innerHeight/3);
 	$scope.boardImg.width = $scope.boardImg.height * tmp;
 	$scope.boardImgX = window.innerWidth/2-$scope.boardImg.width/2;
-	$scope.boardImgY = canvasVisibleHeight/2 + 1.25*tmp*$scope.boardImg.height/17.5 - $scope.boardImg.height/2;
+	$scope.boardImgY = Math.max(canvasVisibleHeight/2 + 1.25*tmp*$scope.boardImg.height/17.5 - $scope.boardImg.height/2, 3.5*tmp*$scope.boardImg.height/17.5);
 	
 	// tmp = $scope.boardImg.height / $scope.boardImg.width;
 	// $scope.boardImg.width = window.innerWidth / 4;
@@ -1126,15 +1067,20 @@ $scope.CanvasState = function(canvas) {
 			}
 		}
 		$scope.shuffle($scope.deck);
-        $scope.prepareGame(document.getElementById("selectplayers").value);
+        for(var cp = 0; cp < document.getElementById("selectplayers").value; cp++)
+            $scope.players.push(new Player(cp));
+        $scope.prepareGame();
         
         $scope.myId = 0;
-		$scope.players[$scope.myId].name = document.getElementById("name").value;
+        if(document.getElementById("name").value.length == 0)
+            $scope.players[$scope.myId].name = "Player " + $scope.myId;
+        else
+            $scope.players[$scope.myId].name = document.getElementById("name").value;
         
         $scope.newGame();
     };
         
-    //TODO: Andrei: send data to server (send: document.getElementById("selectplayers").value, $scope.deck[i].colorId, $scope.deck[i].constraintId)
+
     $scope.configNewGame = function(gameURI) {
         // Send to server
         var query = '';
@@ -1142,41 +1088,71 @@ $scope.CanvasState = function(canvas) {
           query += 'INSERT DATA { <#player'+i+'> <'+RDF("type").value+'> <'+KANG("Player").value+'> . } ;\n';
           query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerId').value+'> "'+i+'" . } ;\n';
           if (i == 0) {
-            query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerName').value+'> "'+document.getElementById("name").value+'" . } ;\n';
+            query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerName').value+'> "'+ $scope.players[$scope.myId].name +'" . } ;\n';
             query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerJoined').value+'> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> . }';
           }
           if (i <= document.getElementById("selectplayers").value - 1) {
             query += " ;\n";
           }
         }
-        console.log(query);
 
         $scope.sendSPARQLPatch(gameURI, query).then(function(status) {
           if (status == 'success') {
             $scope.gameURI = gameURI;
-            $scope.waitForPlayersState = true;
+            $scope.startGameState = true;
+            if(document.getElementById("selectplayers").value == 1){
+                $scope.waitForPlayersState = false;
+                $scope.gameCanStartState = true;
+            }
+            else
+                $scope.waitForPlayersState = true;
             $scope.$apply();
             $scope.connectToSocket();
           }
         });
-        
-        
 	}
-	
-	$scope.prepareGame = function(nrPlayers){
+    
+    //user joins the game
+    $scope.joinGame = function(){
+        $scope.connectToSocket();
+        var name = "";
+        if(document.getElementById("name").value.length == 0)
+            name = "Player " + $scope.myId;
+        else
+            name = document.getElementById("name").value;
+        
+        //send data to server (name, join)
+        var query = '';
+        query += 'INSERT DATA { <#player'+$scope.myId+'> <'+KANG('playerJoined').value+'> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> . };\n';
+        query += 'INSERT DATA { <#player'+$scope.myId+'> <'+KANG('playerName').value+'> "'+ name + '" . }';
+        
+        $scope.sendSPARQLPatch($scope.gameURI, query).then(function(status) {
+            if (status == 'success') {
+                $scope.personalizeUserState = false;
+                $scope.startGameState = true;
+            }
+        });
+        
+
+        
+        //$scope.prepareGame();
+       // $scope.players[$scope.myId].name = name;
+    }
+    
+    
+	//create players, rounds, result bard
+	$scope.prepareGame = function(){
 		$scope.noOfRounds = $scope.deck.length/$scope.colors.length;
 		$scope.round = 0;
 
-        for(var cp = 0; cp < nrPlayers; cp++)
-            $scope.players.push(new Player(cp));
-	    //TODO: de pus si numele
-	}
+//        for(var cp = 0; cp < nrPlayers; cp++)
+//            $scope.players.push(new Player(cp));
   
-	$scope.resultBoardImg = document.getElementById("resultBoardImg");
-  	tmp = $scope.resultBoardImg.height / $scope.resultBoardImg.width;
-	$scope.resultBoardImg.width = Math.min(0.8 * window.innerWidth / $scope.players.length, $scope.boardImg.width);
-    $scope.resultBoardImg.height = $scope.resultBoardImg.width * tmp;
-    
+        $scope.resultBoardImg = document.getElementById("resultBoardImg");
+        tmp = $scope.resultBoardImg.height / $scope.resultBoardImg.width;
+        $scope.resultBoardImg.width = Math.min(0.8 * window.innerWidth / $scope.players.length, $scope.boardImg.width);
+        $scope.resultBoardImg.height = $scope.resultBoardImg.width * tmp;
+    }
   
     //for debugging
     _scope = $scope;

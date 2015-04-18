@@ -14,10 +14,15 @@
 
 <body ng-cloak ng-controller="Main">
 
-    <!-- Debug -->
-    <div class="row center" ng-show="true">
-<!--        <div class="col s12" id = "debug">-->
-		</div>
+    
+    <!-- Constraints -->
+    <div class="row center" ng-show="playState || resultsState || startGameState">
+        <div class="col s12" id = "constraintsDiv">Table with constraints</div>
+    </div>
+    
+    <!-- Start game -->
+    <div class="row center" ng-show="gameCanStartState">
+        <button class="btn" type="button" ng-click="startGame()">Start game</button>
     </div>
     
     <!-- Create new game -->
@@ -36,7 +41,7 @@
             <label for="name">Name: </label>
 		</div>
 		
-        <div class="col s3 valign">
+        <div class="col s3">
 			<button class="btn" type="submit" ng-click="createGame()">Create game</button>
 		</div>
 
@@ -44,37 +49,39 @@
  
     <!-- New user joining -->
      <div class="row center" ng-show="personalizeUserState">
-        <div class="col s12">Personalize User</div>
+        <div class="col s3 valign input-field">
+			<input id="name" type="text">
+            <label for="name">Name: </label>
+		</div>
+        <div class="col s3 valign">
+			<button class="btn" type="submit" ng-click="joinGame()">Join game</button>
+		</div>
     </div>
      
     <!-- Wait for everybody to get ready -->
-     <div class="row center" ng-show="waitForPlayersState">
-         <div class="col s12"><h4>Wait for other players</h4></div>
+    <div class="row center" ng-show="startGameState && !gameCanStartState">
+         <div class="col s12"><h5>Wait for other players</h5></div>
+    </div>
+    
+    <!-- Links for other players -->
+    <div class="row center" ng-show="waitForPlayersState">
          <div class="col s12">Give these links to other players:
-                <div class="row s12 mt-30" ng-repeat="(id, p) in players track by $index">
+                <div class="row s12 mt-10" ng-repeat="(id, p) in players track by $index">
                     <div class="input-field col s12" ng-show="id > 0">
                         <input type="text" id="link_{{id}}" value="{{appuri}}{{gameURI|btoa}}/{{id}}">
                         <label for="link_{{id}}" class="active">Give this link to player {{id+1}}</label>
                     </div>
                 </div>
          </div>
-        <div class="col s12"><button class="btn" type="button">Start first round</button></div>
+<!--        <div class="col s12"><button class="btn" type="button">Start first round</button></div>-->
     </div> 
 
-    <!-- Constraints -->
-    <div class="row center" ng-show="playState || resultsState || startGameState">
-        <div class="col s12" id = "constraintsDiv">Table with constraints</div>
-    </div>
-    
-    <!-- Start game -->
-    <div class="row center" ng-show="startGameState">
-        <button class="btn" type="button" ng-click="startGame()">Start game</button>
-    </div>
+
     
 	<!-- Round results -->
     <div class="row center" ng-show="resultsState">
-        <button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState">New round</button>
-        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>
+        <button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState && newRoundCanStartState">New round</button>
+<!--        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>-->
     </div>
 	
 	<!-- Game results -->
