@@ -948,7 +948,7 @@ $scope.CanvasState = function(canvas) {
 			if($scope.pieces[cp].placeId != -1){
                 $scope.constraintsColorsStack = [];
 				$scope.pieces[cp].ok = $scope.checkConstraint($scope.pieces[cp]);
-	//		}
+			}
 		}
 	}
 	
