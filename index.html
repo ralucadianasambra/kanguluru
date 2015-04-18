@@ -26,24 +26,27 @@
     </div>
     
     <!-- Create new game -->
-     <div class="row valigh" ng-show="createGameState">
-		<div class="col s2 valigh-wrapper">
-			<select ng-model="defaultNrPlayers" id="selectplayers">
-				<option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
-			</select>
-		</div> 
+     <div class="row" ng-show="createGameState">
 
 		<div  class="col s2" id = "selectConstraints">
 		</div>
 
-        <div class="col s3 valign input-field">
-			<input id="name" type="text">
-            <label for="name">Name: </label>
-		</div>
-		
-        <div class="col s3">
-			<button class="btn" type="submit" ng-click="createGame()">Create game</button>
-		</div>
+        <div class="col s9 valign-wrapper">
+            <div class="col s3 input-field ">
+                <input id="name" type="text">
+                <label for="name">Your name: </label>
+            </div>        
+
+            <div class="col s3 valign">
+                <select ng-model="defaultNrPlayers" id="selectplayers">
+                    <option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
+                </select>
+            </div> 
+
+            <div class="col s3 valign">
+                <button class="btn" type="submit" ng-click="createGame()">Create game</button>
+            </div>
+        </div>
 
     </div>
  

@@ -442,7 +442,7 @@ $scope.CanvasState = function(canvas) {
 					fontHeight = Math.floor($scope.resultBoardImg.height/10);
 					ctx.font = "bold "+fontHeight+"px Verdana";
 					ctx.fillStyle = "rgba(200, 250, 150, 1)";
-					var text = $scope.players[cpl].name + ": " + $scope.players[cpl].newPoints + " ("+$scope.players[cpl].score+")";
+					var text = $scope.players[cpl].name + ": " + $scope.players[cpl].score + " (+"+$scope.players[cpl].newPoints+")";
 					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 + fontHeight/2);
 				}
 						   
@@ -945,7 +945,7 @@ $scope.CanvasState = function(canvas) {
 	
 	$scope.checkPiecesPlacement = function(){
 		for(var cp = 0; cp < $scope.pieces.length; cp++){
-//			if($scope.pieces[cp].placeId != -1){
+			if($scope.pieces[cp].placeId != -1){
                 $scope.constraintsColorsStack = [];
 				$scope.pieces[cp].ok = $scope.checkConstraint($scope.pieces[cp]);
 	//		}
@@ -1022,10 +1022,12 @@ $scope.CanvasState = function(canvas) {
 	}
 	$scope.createConstraintsTable();
 	
-	var text = "";
+	var text = "<b>Select constraints:</b><br>";
 	for(var cc = 0; cc < $scope.constraints.length; cc++){
-//		text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
-		text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\" checked = \"checked\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
+        if(cc > 4)
+		  text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
+        else
+		  text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\" checked = \"checked\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
 	}
 	document.getElementById("selectConstraints").innerHTML = text;
 	
