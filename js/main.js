@@ -753,13 +753,13 @@ $scope.CanvasState = function(canvas) {
     
 	$scope.startRound = function(){
 		if($scope.round < $scope.noOfRounds){
-				$scope.round++;
+            $scope.round++;
             document.getElementById("roundDiv").innerHTML = "Round " + $scope.round +" / " +$scope.noOfRounds;
-            var text = "<table><tr>";
-            for(var cpl = 0; cpl < $scope.players.length; cpl++)
-                text += "<td>" + $scope.players[cpl].name + ": " + $scope.players[cpl].score + "</td>";
-            text += "</tr></table>"
-            document.getElementById("scoreDiv").innerHTML = text;
+//            var text = "<table><tr>";
+//            for(var cpl = 0; cpl < $scope.players.length; cpl++)
+//                text += "<td>" + $scope.players[cpl].name + ": " + $scope.players[cpl].score + "</td>";
+//            text += "</tr></table>"
+//            document.getElementById("scoreDiv").innerHTML = text;
             $scope.resultsState = false;
 			$scope.playState = true;
 			$scope.distributeCards();

@@ -18,7 +18,11 @@
     <div class="row top valign-wrapper" id="Menu">
         
         <div class="col s2 valign" id = "roundDiv">&nbsp;</div>
-        <div class="col s6 valign" id = "scoreDiv">&nbsp;</div>
+        <div class="col s6 valign" id = "scoreDiv">
+            <table><tr>
+                <td ng-repeat="player in players" >{{player.name}}: {{player.score}}</td>
+            </tr></table>
+        </div>
         <div class="col s1 valign tab right selected" id = "viewHomeDiv" ng-click="selectHomeDiv()" onmouseover="" style="cursor: pointer;">Home</div>
         <div class="col s1 valign tab right" id = "viewRulesDiv" ng-click="selectRulesDiv()" onmouseover="" style="cursor: pointer;">Rules</div>
         <div class="col s1 valign tab right" id = "viewStoryDiv" ng-click="selectStoryDiv()" onmouseover="" style="cursor: pointer;">Story</div>
