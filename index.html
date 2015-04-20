@@ -14,91 +14,120 @@
 
 <body ng-cloak ng-controller="Main">
 
-    
-    <!-- Constraints -->
-    <div class="row center" ng-show="playState || resultsState || startGameState">
-        <div class="col s12" id = "constraintsDiv">Table with constraints</div>
+    <!-- Menu -->
+    <div class="row top valign-wrapper" id="Menu">
+        
+        <div class="col s2 valign" id = "roundDiv">&nbsp;</div>
+        <div class="col s6 valign" id = "scoreDiv">&nbsp;</div>
+        <div class="col s1 valign tab right selected" id = "viewHomeDiv" ng-click="selectHomeDiv()" onmouseover="" style="cursor: pointer;">Home</div>
+        <div class="col s1 valign tab right" id = "viewRulesDiv" ng-click="selectRulesDiv()" onmouseover="" style="cursor: pointer;">Rules</div>
+        <div class="col s1 valign tab right" id = "viewStoryDiv" ng-click="selectStoryDiv()" onmouseover="" style="cursor: pointer;">Story</div>
+        <div class="col s1 valign tab right" ng-show="soundOn"><img src="images/soundOnWhite25.png" style="height:20" ng-click="turnOffSound()"></div>
+        <div class="col s1 valign right" ng-show="!soundOn"><img src="images/soundOffWhite25.png" style="height:20" ng-click="turnOnSound()"></div>
+        
     </div>
-    
-    <!-- Start game -->
-    <div class="row center" ng-show="gameCanStartState">
-        <button class="btn" type="button" ng-click="startGame()">Start game</button>
-    </div>
-    
-    <!-- Create new game -->
-     <div class="row" ng-show="createGameState">
 
-		<div  class="col s2" id = "selectConstraints">
-		</div>
+    <div id="homeDiv" ng-show="showHomeDiv">
+        <!-- Constraints -->
+        <div class="row center constraints" ng-show="playState || resultsState || startGameState">
+            <div class="col s12" id = "constraintsDiv">Table with constraints</div>
+        </div>
 
-        <div class="col s9 valign-wrapper">
-            <div class="col s3 input-field ">
-                <input id="name" type="text">
-                <label for="name">Your name: </label>
-            </div>        
+        <!-- Start game -->
+        <div class="row center" ng-show="gameCanStartState">
+            <br>
+            <button class="btn" type="button" ng-click="startGame()">Start game</button>
+        </div>
 
+        <!-- Create new game -->
+        <div class="row" ng-show="createGameState">
+
+            <div  class="col s2" id = "selectConstraints">
+            </div>
+
+            <div class="col s9 valign-wrapper">
+                <div class="col s3 input-field ">
+                    <input id="name" type="text">
+                    <label for="name">Your name: </label>
+                </div>        
+
+                <div class="col s3 valign">
+                    <select ng-model="defaultNrPlayers" id="selectplayers">
+                        <option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
+                    </select>
+                </div> 
+
+                <div class="col s3 valign">
+                    <button class="btn" type="submit" ng-click="createGame()">Create game</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- New user joining -->
+         <div class="row center valign-wrapper" ng-show="personalizeUserState">
+            <div class="col s3 valign input-field">
+                <input id="nameJU" type="text">
+                <label for="name">Name: </label>
+            </div>
             <div class="col s3 valign">
-                <select ng-model="defaultNrPlayers" id="selectplayers">
-                    <option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
-                </select>
-            </div> 
-
-            <div class="col s3 valign">
-                <button class="btn" type="submit" ng-click="createGame()">Create game</button>
+                <button class="btn" type="submit" ng-click="joinGame()">Join game</button>
             </div>
         </div>
 
-    </div>
- 
-    <!-- New user joining -->
-     <div class="row center" ng-show="personalizeUserState">
-        <div class="col s3 valign input-field">
-			<input id="nameJU" type="text">
-            <label for="name">Name: </label>
-		</div>
-        <div class="col s3 valign">
-			<button class="btn" type="submit" ng-click="joinGame()">Join game</button>
-		</div>
-    </div>
-     
-    <!-- Wait for everybody to get ready -->
-    <div class="row center" ng-show="startGameState && !gameCanStartState">
-         <div class="col s12"><h5>Wait for other players</h5></div>
-    </div>
-    
-    <!-- Links for other players -->
-    <div class="row center" ng-show="waitForPlayersState">
-         <div class="col s12">Give these links to other players:
-                <div class="row s12 mt-10" ng-repeat="(id, p) in players track by $index">
-                    <div class="input-field col s12" ng-show="id > 0">
-                        <input type="text" id="link_{{id}}" value="{{appuri}}{{gameURI|btoa}}/{{id}}">
-                        <label for="link_{{id}}" class="active">Give this link to player {{id+1}}</label>
+        <!-- Wait for everybody to get ready -->
+        <div class="row center" ng-show="startGameState && !gameCanStartState">
+             <div class="col s12"><h5>Wait for other players</h5></div>
+        </div>
+
+        <!-- Links for other players -->
+        <div class="row center" ng-show="waitForPlayersState">
+             <div class="col s12">Give these links to other players:
+                    <div class="row s12 mt-10" ng-repeat="(id, p) in players track by $index">
+                        <div class="input-field col s12" ng-show="id > 0">
+                            <input type="text" id="link_{{id}}" value="{{appuri}}{{gameURI|btoa}}/{{id}}">
+                            <label for="link_{{id}}" class="active">Give this link to player {{id+1}}</label>
+                        </div>
                     </div>
-                </div>
-         </div>
-<!--        <div class="col s12"><button class="btn" type="button">Start first round</button></div>-->
-    </div> 
+             </div>
+    <!--        <div class="col s12"><button class="btn" type="button">Start first round</button></div>-->
+        </div> 
 
 
+
+        <!-- Round results -->
+        <div class="row center" ng-show="resultsState">
+            <br><button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState && newRoundCanStartState">New round</button>
+    <!--        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>-->
+        </div>
+
+        <!-- Game results -->
+        <div class="row center" ng-show="gameEndState">
+            <div class="col s12" id="endGameDiv">End game div</div>
+        </div>
+
+        <!-- Playing area -->
+        <div class="row center" ng-show="playState || resultsState">
+                <canvas id="game" style="z-index: 1;">
+                    Your browser does not support HTML5 Canvas!
+                </canvas>
+        </div>
+    </div>
     
-	<!-- Round results -->
-    <div class="row center" ng-show="resultsState">
-        <button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState && newRoundCanStartState">New round</button>
-<!--        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>-->
+    <div id="rulesDiv" ng-show="showRulesDiv">
+        <div class="col s12 center">
+            <h4>Rules</h4>
+            </div>
+        To come...
+        
     </div>
-	
-	<!-- Game results -->
-    <div class="row center" ng-show="gameEndState">
-        <div class="col s12" id="endGameDiv">End game div</div>
-<!--        TODO: link as a variable! set onload()-->
-<!--        <div><a href="ralucadianasambra.github.io/Shamblokus"><button class="btn" type="button">Prepare new game</button></a></div>-->
-    </div>
-	
-    <!-- Playing area -->
-    <div class="row center" ng-show="playState || resultsState">
-            <canvas id="game" style="z-index: 1;">
-                Your browser does not support HTML5 Canvas!
-            </canvas>
+    
+    <div id="storyDiv" ng-show="showStoryDiv">
+        <div class="col s12 center">
+            <h4>Uluru's incredible story</h4>
+            </div>
+        To come...
+        
     </div>
     
 	<div id="sound" ng-show=false></div>

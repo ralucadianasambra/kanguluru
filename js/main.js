@@ -71,6 +71,9 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
 	$scope.players = [];
     $scope.constraintsColorsStack = [];
     $scope.constraintsLoopReturn = false;
+    $scope.showHomeDiv = true;
+    $scope.showRulesDiv = false;
+    $scope.showStoryDiv = false;
  
 
   $scope.connectToSocket = function() {
@@ -302,6 +305,45 @@ $scope.gameUpdated = function(gameURI) {
         //$scope.myPlayer.bag[$scope.activeBagId].setAvailability(true);
         }
     });
+    
+    $scope.selectHomeDiv = function(){
+        $scope.showHomeDiv = false;
+        $scope.showRulesDiv = false;
+        $scope.showStoryDiv = false;
+        
+        document.getElementById("viewHomeDiv").className = document.getElementById("viewHomeDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewRulesDiv").className = document.getElementById("viewRulesDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewStoryDiv").className = document.getElementById("viewStoryDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        
+        document.getElementById("viewHomeDiv").className += " selected";
+        $scope.showHomeDiv = true;
+    }
+    
+    $scope.selectRulesDiv = function(){
+        $scope.showHomeDiv = false;
+        $scope.showRulesDiv = false;
+        $scope.showStoryDiv = false;
+        
+        document.getElementById("viewHomeDiv").className = document.getElementById("viewHomeDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewRulesDiv").className = document.getElementById("viewRulesDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewStoryDiv").className = document.getElementById("viewStoryDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        
+        document.getElementById("viewRulesDiv").className += " selected";
+        $scope.showRulesDiv = true;
+    }
+    
+    $scope.selectStoryDiv = function(){
+        $scope.showHomeDiv = false;
+        $scope.showRulesDiv = false;
+        $scope.showStoryDiv = false;
+        
+        document.getElementById("viewHomeDiv").className = document.getElementById("viewHomeDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewRulesDiv").className = document.getElementById("viewRulesDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        document.getElementById("viewStoryDiv").className = document.getElementById("viewStoryDiv").className.replace( /(?:^|\s)selected(?!\S)/g , '' );
+        
+        document.getElementById("viewStoryDiv").className += " selected";
+        $scope.showStoryDiv = true;
+    }
 
 //  $scope.$watch('userProfile.name', function(newVal, oldVal) {
 //    if (newVal && newVal !== undefined && newVal.length > 0) {
@@ -370,11 +412,6 @@ $scope.CanvasState = function(canvas) {
 				var ctx = this.ctx;
 				this.clear();
 				
-				//write round no
-				ctx.font = "bold 15px Verdana";
-				ctx.fillStyle = "rgba(255, 255, 255, 1)";
-				ctx.fillText("Round " + $scope.round + " / " + $scope.noOfRounds, 10, 20);
-				
 				//draw board
 				ctx.drawImage($scope.boardImg, $scope.boardImgX, $scope.boardImgY, $scope.boardImg.width, $scope.boardImg.height);
 				
@@ -383,9 +420,9 @@ $scope.CanvasState = function(canvas) {
 					fontHeight = Math.floor($scope.boardImg.height/4);
 					ctx.font = "bold "+fontHeight+"px Verdana";
 					if($scope.time > 3)
-						ctx.fillStyle = "rgba(200, 250, 150, 0.5)";
+						ctx.fillStyle = "rgba(200, 200, 200, 0.5)";
 					else
-						ctx.fillStyle = "rgba(255, 0, 0, 0.9)";
+						ctx.fillStyle = "rgba(150, 0, 0, 0.8)";
 					ctx.fillText($scope.time+"\"", $scope.boardImgX + $scope.boardImg.width/2 - fontHeight, $scope.boardImgY + $scope.boardImg.height/2 + fontHeight/2, 2*fontHeight);
 				}
 				
@@ -401,12 +438,6 @@ $scope.CanvasState = function(canvas) {
 			else{
 				var ctx = this.ctx;
 				this.clear();
-
-                //write round no
-                ctx.font = "bold 15px Verdana";
-                ctx.fillStyle = "rgba(255, 255, 255, 1)";
-                ctx.fillText("Round " + $scope.round + " / " + $scope.noOfRounds, 10, 20);
-
                 for(cpl = 0; cpl < $scope.players.length; cpl++){
 
                     //draw board
@@ -424,7 +455,7 @@ $scope.CanvasState = function(canvas) {
                                 cPiece.draw(this.ctx, $scope.colors);
                                 if(!cPiece.ok){
                                     ctx.strokeStyle = "rgba(150, 0, 0, 0.8)";
-                                    ctx.lineWidth=5;
+                                    ctx.lineWidth=Math.max(3, cPiece.radius/4);
                                     ctx.beginPath();
                                     ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y - cPiece.radius);
                                     ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y + cPiece.radius);
@@ -442,7 +473,7 @@ $scope.CanvasState = function(canvas) {
                     //write score
 					fontHeight = Math.floor($scope.resultBoardImg.height/10);
 					ctx.font = "bold "+fontHeight+"px Verdana";
-					ctx.fillStyle = "rgba(200, 250, 150, 1)";
+					ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
 					var text = $scope.players[cpl].name + ": " ;
 					ctx.fillText(text, X + $scope.resultBoardImg.width/4, Y + $scope.resultBoardImg.height/2 - fontHeight/5);
                     var text = $scope.players[cpl].score + " (+"+$scope.players[cpl].newPoints+")";
@@ -669,13 +700,13 @@ $scope.CanvasState = function(canvas) {
 		for(var i = 0; i < $scope.colors.length; i++){
 			var rgb = "rgb(" + $scope.colors[i].R +", " + $scope.colors[i].G + ", " + $scope.colors[i].B + ")";
 			text += "<td>";
-			text += "<img src=\"images/"+$scope.colors[i].name+".png\" width = \"" +window.innerWidth / 10+"\">";
+			text += "<img src=\"images/"+$scope.colors[i].name+".png\" height = \"" +$scope.cardImg.height+"\">";
 			//text += $scope.colors[i].name + "(IMG!!! to come)";		//TODO: images instead of text
 			text += "</td>";
 		}
 		text += "<tr>";
 		for(var i = 0; i < $scope.colors.length; i++){
-			text += "<td id = \""+i+"\"><img id=\"cardImg\" src=\"images/board.png\" width = \"" +$scope.cardImg.width+"\">";
+			text += "<td id = \""+i+"\" style=\"font-size: 9px; color: #888888;\"><img id=\"cardImg\" src=\"images/board.png\" width = \"" +$scope.cardImg.width+"\">";
 			text += "</td>";
 		}
 		text += "</tr>";
@@ -703,9 +734,9 @@ $scope.CanvasState = function(canvas) {
                 else
                     text += "<img id=\"cardImg\" src=\"images/CardsResize/"+cCard.constraintId+"_"+cCard.colorId+".png\" width = \"" +$scope.cardImg.width+"\">";
                 if(cCard.constraintId < 5)
-				    text += "<br><font = 10px>"+$scope.constraints[cCard.constraintId].name + "</font>";
+				    text += "<br>"+$scope.constraints[cCard.constraintId].name;
                 else
-                    text += "<br><font = 10px>"+$scope.constraints[cCard.constraintId].name + " " + $scope.colors[cCard.colorId].name+"</font>";
+                    text += "<br>"+$scope.constraints[cCard.constraintId].name + " " + $scope.colors[cCard.colorId].name;
 				document.getElementById(i).innerHTML = text;
 			}
 		}
@@ -723,7 +754,13 @@ $scope.CanvasState = function(canvas) {
 	$scope.startRound = function(){
 		if($scope.round < $scope.noOfRounds){
 				$scope.round++;
-			$scope.resultsState = false;
+            document.getElementById("roundDiv").innerHTML = "Round " + $scope.round +" / " +$scope.noOfRounds;
+            var text = "<table><tr>";
+            for(var cpl = 0; cpl < $scope.players.length; cpl++)
+                text += "<td>" + $scope.players[cpl].name + ": " + $scope.players[cpl].score + "</td>";
+            text += "</tr></table>"
+            document.getElementById("scoreDiv").innerHTML = text;
+            $scope.resultsState = false;
 			$scope.playState = true;
 			$scope.distributeCards();
 			$scope.startCountdouwn();
@@ -983,22 +1020,18 @@ $scope.CanvasState = function(canvas) {
     $scope.boardImg = document.getElementById("boardImg");
 	$scope.cardImg = document.getElementById("cardImg");
 	$scope.canvas = document.getElementById('game');
-	tmp = $scope.cardImg.height / $scope.cardImg.width;
+	tmp = 0.78; //$scope.cardImg.height / $scope.cardImg.width;
 	$scope.cardImg.width = window.innerWidth * 4/41;
 	$scope.cardImg.height = $scope.cardImg.width * tmp;
 
-	var canvasVisibleHeight = window.innerHeight - $scope.canvas.offsetTop;
-	tmp = $scope.boardImg.width / $scope.boardImg.height;
-	$scope.boardImg.height = Math.max(canvasVisibleHeight * 0.6, window.innerHeight/3);
+	//var canvasVisibleHeight = window.innerHeight - $scope.canvas.offsetTop;
+	var canvasVisibleHeight = window.innerHeight - 2* $scope.cardImg.height - document.getElementById("Menu").clientHeight;
+    tmp = 1.282; //$scope.boardImg.width / $scope.boardImg.height;
+	$scope.boardImg.height = canvasVisibleHeight*0.6;//Math.max(canvasVisibleHeight * 0.6, window.innerHeight/3);
 	$scope.boardImg.width = $scope.boardImg.height * tmp;
 	$scope.boardImgX = window.innerWidth/2-$scope.boardImg.width/2;
 	$scope.boardImgY = Math.max(canvasVisibleHeight/2 + 1.25*tmp*$scope.boardImg.height/17.5 - $scope.boardImg.height/2, 3.5*tmp*$scope.boardImg.height/17.5);
 	
-	// tmp = $scope.boardImg.height / $scope.boardImg.width;
-	// $scope.boardImg.width = window.innerWidth / 4;
-    // $scope.boardImg.height = $scope.boardImg.width * tmp;
-	// $scope.boardImgX = window.innerWidth/2-$scope.boardImg.width/2;
-	// $scope.boardImgY = ((window.innerHeight - $scope.canvas.offsetTop)*0.5-$scope.boardImg.height/2;
 
 	$scope.colors = [];
 	$scope.colors.push(new Color(0, "white", 200, 200, 200));
@@ -1036,7 +1069,7 @@ $scope.CanvasState = function(canvas) {
 	}
 	$scope.createConstraintsTable();
 	
-	var text = "<b>Select constraints:</b><br>";
+	var text = "<h6>Select constraints:</h6>";
 	for(var cc = 0; cc < $scope.constraints.length; cc++){
         if(cc > 4)
 		  text += "<input type=\"checkbox\" class=\"with-gap\" id=\"C"+cc+"\"/><label for=\"C"+cc+"\">"+$scope.constraints[cc].name+"</label><br>";
@@ -1160,12 +1193,9 @@ $scope.CanvasState = function(canvas) {
 	$scope.prepareGame = function(){
 		$scope.noOfRounds = $scope.deck.length/$scope.colors.length;
 		$scope.round = 0;
-
-//        for(var cp = 0; cp < nrPlayers; cp++)
-//            $scope.players.push(new Player(cp));
   
         $scope.resultBoardImg = document.getElementById("resultBoardImg");
-        tmp = $scope.resultBoardImg.height / $scope.resultBoardImg.width;
+        tmp = 0.78;//$scope.resultBoardImg.height / $scope.resultBoardImg.width;
         $scope.resultBoardImg.width = Math.min(0.8 * window.innerWidth / $scope.players.length, $scope.boardImg.width);
         $scope.resultBoardImg.height = $scope.resultBoardImg.width * tmp;
     }

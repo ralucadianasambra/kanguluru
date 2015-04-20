@@ -8,15 +8,17 @@ body {
 }
 
 .top {
-    padding: 10px !important;
-    background-color: #333333;
+    background-color: #444444;
+    padding: 0px !important;
+}
+
+.constraints {
+/*    background-color: #333333;*/
 }
 
 td {
     padding: 0px !important;
 	text-align: center !important;
-    font-size: 9px;
-    color: #888888;
 }
 
 .board {
@@ -28,14 +30,18 @@ td {
 
 .btn {
     margin-bottom: 0px !important;
-    background-color: #1E90FF!important;
+/*    background-color: #1E90FF!important;*/
 }
 .btn:hover {
-    background-color: #4FA6FA!important;
+/*    background-color: #4FA6FA!important;*/
 }
 
-.btn-large{
-    background-color: #1E90FF;
+.selected{
+    color: #80cbc4 ;
+}
+
+h1, h2, h3, h4, h5, h6{
+    color: #009688;
 }
 
 .mr-20 {
@@ -47,7 +53,7 @@ td {
 }
 
 #selectplayers {
-    color: #000;
+    color: #26a69a ;
     display: block;
 }
 
@@ -60,6 +66,9 @@ td {
 }
 
 .row {
-  margin-bottom: 5px;
+  margin-bottom: 0px;
 }
 
+.table{
+    width: 100%;
+}
