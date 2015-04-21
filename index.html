@@ -46,24 +46,56 @@
         <!-- Create new game -->
         <div class="row" ng-show="createGameState">
 
+            <div  class="col s1" >&nbsp;</div>
             <div  class="col s2" id = "selectConstraints">
             </div>
 
             <div class="col s9 valign-wrapper">
+                <div class="col s4 ">
+                    <div class="row input-field ">
+                    <input id="name" type="text">
+                    <label for="name">Your name: </label>
+                    </div>
+                    <br>
+                    
+                    <div class="row">
+                    <label>Time per Round ({{timePerRound}} seconds): </label>
+                    <form action="#"> <p class="range-field">
+                    <input type="range" value="42" id="timePerRound" ng-model="timePerRound"  min="30" max="90"/>
+                    </p></form>
+                        
+                    </div>
+                    
+                    <div class="row">
+                        <label>No of Players ({{noOfPlayers}}): </label>
+                    <form action="#"> <p class="range-field">
+                        <input type="range" value = "1" id="selectplayers" min="1" max="10" ng-model="noOfPlayers" />
+                    </p></form>
+                    </div>
+                    
+                </div> 
+                
+                
+<!--
                 <div class="col s3 input-field ">
                     <input id="name" type="text">
                     <label for="name">Your name: </label>
-                </div>        
+                </div>     
 
                 <div class="col s3 valign">
                     <select ng-model="defaultNrPlayers" id="selectplayers">
                         <option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
                     </select>
                 </div> 
+                
+   -->             
+                
 
-                <div class="col s3 valign">
+                <div  class="col s1" >&nbsp;</div>
+                <div class="col s3 center valign">
                     <button class="btn" type="submit" ng-click="createGame()">Create game</button>
                 </div>
+
             </div>
 
         </div>

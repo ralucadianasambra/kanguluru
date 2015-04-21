@@ -74,6 +74,8 @@ uluru.controller('Main', function MainCtrl ($scope, $http, $state, $stateParams)
     $scope.showHomeDiv = true;
     $scope.showRulesDiv = false;
     $scope.showStoryDiv = false;
+    $scope.timePerRound = 42;
+    $scope.noOfPlayers = 1;
  
 
   $scope.connectToSocket = function() {
@@ -179,6 +181,12 @@ $scope.gameUpdated = function(gameURI) {
                 for(var cp = 0; cp < players.length; cp++)
                     $scope.players.push(new Player(cp));
                 
+                
+//                //read time
+//                var time = g.statementsMatching(undefined, RDF("type"), KANG("Time"));
+//                var t = g.any(time.subject, KANG("time"));
+//                $scope.timePerRound = parseInt(t.value, 10);
+                
                 //create deck
                 $scope.deck = [];
                 var deck = g.statementsMatching(undefined, RDF("type"), KANG("Deck"));
@@ -217,6 +225,9 @@ $scope.gameUpdated = function(gameURI) {
                         }
                     }
                 }
+                var time = g.any(players[0].subject, KANG("time"));
+                $scope.timePerRound = parseInt(time.value, 10);
+                    
                 //test if all players joined
                 if(cnt == $scope.players.length){
                     $scope.gameCanStartState = true;
@@ -614,7 +625,7 @@ $scope.CanvasState = function(canvas) {
 	}
   
 	$scope.startCountdouwn = function(){
-		$scope.time = 42   ;
+		$scope.time = $scope.timePerRound   ;
 		$scope.countDown();
 		$scope.countDownPtr = setInterval(function(){ $scope.countDown()}, 1000);
 	}
@@ -1120,6 +1131,8 @@ $scope.CanvasState = function(canvas) {
             $scope.players.push(new Player(cp));
         $scope.prepareGame();
         
+        $scope.timePerRound = document.getElementById("timePerRound").value;
+        
         $scope.myId = 0;
         if(document.getElementById("name").value.length == 0)
             $scope.players[$scope.myId].name = "Player " + $scope.myId;
@@ -1128,16 +1141,22 @@ $scope.CanvasState = function(canvas) {
         
         $scope.newGame();
     };
-        
+    
 
     $scope.configNewGame = function(gameURI) {
         // Send to server
         var query = '';
+        //query += 'INSERT DATA { <#time> <'+RDF("type").value+'> <'+KANG("Time").value+'> . } ;\n';
+        //query += 'INSERT DATA { <#time> <'+KANG('time').value+'> "'+$scope.timePerRound+'" . }';
+        //$scope.sendSPARQLPatch($scope.gameURI, query);
+        
+        //query = '';
         for (var i=0; i<document.getElementById("selectplayers").value; i++) {
           query += 'INSERT DATA { <#player'+i+'> <'+RDF("type").value+'> <'+KANG("Player").value+'> . } ;\n';
           query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerId').value+'> "'+i+'" . } ;\n';
           if (i == 0) {
             query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerName').value+'> "'+ $scope.players[$scope.myId].name +'" . } ;\n';
+            query += 'INSERT DATA { <#player'+i+'> <'+KANG('time').value+'> "'+ $scope.timePerRound +'" . } ;\n';
             query += 'INSERT DATA { <#player'+i+'> <'+KANG('playerJoined').value+'> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> . }';
           }
           if (i <= document.getElementById("selectplayers").value - 1) {
