@@ -594,6 +594,14 @@ $scope.CanvasState = function(canvas) {
     canvas.addEventListener('mouseup', function(e) {
         canvas.deselectPiece();
     }, true); //end of 'mouseup'
+    
+    window.onkeydown = function(e) {
+          var c = e.keyCode;
+          if(c === 27){ //esc
+              $scope.time = 1;
+              $scope.countDown();
+            }
+      }; //end of 'onkeydown'
 
     // **** Options! ****
     this.interval = 30;
