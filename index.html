@@ -63,7 +63,6 @@
                     <form action="#"> <p class="range-field">
                     <input type="range" value="42" id="timePerRound" ng-model="timePerRound"  min="30" max="90"/>
                     </p></form>
-                        
                     </div>
                     
                     <div class="row">
@@ -74,22 +73,6 @@
                     </div>
                     
                 </div> 
-                
-                
-<!--
-                <div class="col s3 input-field ">
-                    <input id="name" type="text">
-                    <label for="name">Your name: </label>
-                </div>     
-
-                <div class="col s3 valign">
-                    <select ng-model="defaultNrPlayers" id="selectplayers">
-                        <option ng-repeat="players in selectPlayers" value="{{players.id}}">{{players.name}}</option>
-                    </select>
-                </div> 
-                
-   -->             
-                
 
                 <div  class="col s1" >&nbsp;</div>
                 <div class="col s3 center valign">
@@ -133,7 +116,8 @@
 
         <!-- Round results -->
         <div class="row center" ng-show="resultsState">
-            <br><button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState && newRoundCanStartState">New round</button>
+            <button class="btn" type="button" ng-click="startRound()" ng-show="!gameEndState && newRoundCanStartState">New round</button>
+            <div id = "roundMessageDiv" style="padding: 5px 0px 0px 0px"></div>
     <!--        <button class="btn" type="button" ng-show="gameEndState">New game (TODO)</button>-->
         </div>
 

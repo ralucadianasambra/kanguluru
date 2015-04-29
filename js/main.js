@@ -616,7 +616,7 @@ $scope.CanvasState = function(canvas) {
 		if($scope.time == 0){
 			clearInterval($scope.countDownPtr);
 			$scope.playing = false;
-			setTimeout(function(){$scope.endRound()}, 1000);		//wait 5 seconds before going to results mode
+			setTimeout(function(){$scope.endRound()}, 10);		//wait 5 seconds before going to results mode
 			var tmp = 2;
 			$scope.playSound('button-16'); 
 			var ptr = setInterval(function(){
@@ -772,6 +772,7 @@ $scope.CanvasState = function(canvas) {
     
 	$scope.startRound = function(){
 		if($scope.round < $scope.noOfRounds){
+            
             $scope.round++;
             document.getElementById("roundDiv").innerHTML = "Round " + $scope.round +" / " +$scope.noOfRounds;
 //            var text = "<table><tr>";
@@ -779,10 +780,16 @@ $scope.CanvasState = function(canvas) {
 //                text += "<td>" + $scope.players[cpl].name + ": " + $scope.players[cpl].score + "</td>";
 //            text += "</tr></table>"
 //            document.getElementById("scoreDiv").innerHTML = text;
-            $scope.resultsState = false;
-			$scope.playState = true;
+
 			$scope.distributeCards();
-			$scope.startCountdouwn();
+
+            //compute best possible score
+            $scope.bestScoreMessage();
+            
+            
+            $scope.resultsState = false;
+			$scope.playState = true;        
+            $scope.startCountdouwn();
 			$scope.playing = true;
 			$scope.arrangePieces();
             $scope.emptyPlaces();
@@ -791,6 +798,32 @@ $scope.CanvasState = function(canvas) {
 		}
 	}
 	
+    
+    $scope.bestScoreMessage = function(){
+        $scope.computeBestScore();      
+            var N = $scope.noOfPossibilities[$scope.bestScore];
+            //document.getElementById("roundMessageDiv").innerHTML = "Best possible score: " + $scope.bestScore ;
+            if($scope.bestScore == 8){
+                if(N==1)
+                    document.getElementById("roundMessageDiv").innerHTML = "This was tough, only one combination!" ;
+                else if (N < 5)
+                    document.getElementById("roundMessageDiv").innerHTML = "This was pretty hard, only " + $scope.noOfPossibilities[$scope.bestScore] + " possibilities to get " + $scope.bestScore + " points!" ;
+                else if (N > 25)
+                    document.getElementById("roundMessageDiv").innerHTML = "This was pretty easy, " + $scope.noOfPossibilities[$scope.bestScore] + " possibilities to get " + $scope.bestScore + " points!" ;
+                else
+                    document.getElementById("roundMessageDiv").innerHTML = "You had " + $scope.noOfPossibilities[$scope.bestScore] + " possibilities to get " + $scope.bestScore + " points!" ;
+            }
+            else{
+                var rnd = Math.floor((Math.random() * 1000))%3;
+                if(rnd == 0)
+                    document.getElementById("roundMessageDiv").innerHTML = "It was impossible to satisfy all those picky kangaroos! At most, you could please " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
+                else if(rnd == 1)
+                    document.getElementById("roundMessageDiv").innerHTML = "Damn kangaroos, never happy! This turn it was impossible to please more then " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
+                else 
+                    document.getElementById("roundMessageDiv").innerHTML = "Who would've thought that kangaroos are more difficult to satisfy the women? At most, you could please " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
+            }
+    }
+    
 	$scope.endRound = function(){
 		$scope.resultsState = true;
 		$scope.playState = false;
@@ -833,7 +866,7 @@ $scope.CanvasState = function(canvas) {
             if($scope.constraintsColorsStack.length > 0){
                 for(var i = 0; i < $scope.constraintsColorsStack.length; i++)
                     if($scope.constraintsColorsStack[i] == piece.card.colorId){      //color already in the color stack ==> loop ==> impossible
-                        console.log("Loop detected: ", $scope.constraintsColorsStack, piece.card.colorId);
+                        //console.log("Loop detected: ", $scope.constraintsColorsStack, piece.card.colorId);
                         $scope.constraintsLoopReturn = true;
                         return true;
                     }
@@ -842,7 +875,7 @@ $scope.CanvasState = function(canvas) {
             else
                 $scope.constraintsColorsStack.push(piece.colorId);
             
-            console.log($scope.constraintsColorsStack);
+            //console.log($scope.constraintsColorsStack);
         }
 		//happy
 		if(piece.card.constraintId == 0){
@@ -1032,6 +1065,59 @@ $scope.CanvasState = function(canvas) {
 		$scope.players[$scope.myId].newPoints = score;
         $scope.players[$scope.myId].score += score;
 	}
+    
+    
+    
+    $scope.computeBestScore = function(){
+        $scope.noOfPossibilities = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        $scope.taken = [0, 0, 0, 0, 0, 0, 0, 0];
+        var i = [0, 0, 0, 0, 0, 0, 0, 0];
+        var a = 0;
+        $scope.bestScore = 0;
+        //try evry possible combination
+        for(i[a] = 0; i[a]< 8; i[a]++){
+            if($scope.taken[i[a]] == 0){       //check is free place
+                $scope.taken[i[a]] = 1;
+                $scope.pieces[a].placeId = i[a];
+                a++;
+                $scope.recursiveCombine(a);
+                a--;
+                $scope.taken[i[a]] = 0;
+                
+            }
+        }
+        console.log($scope.bestScore);
+    }
+    
+    $scope.recursiveCombine = function(a){
+        var i = [0, 0, 0, 0, 0, 0, 0, 0];
+        for(i[a] = 0; i[a]< 8; i[a]++){
+        if($scope.taken[i[a]] == 0){       //check is free place
+            $scope.taken[i[a]] = 1;
+            $scope.pieces[a].placeId = i[a];
+            a++;
+            if(a < 8)
+                $scope.recursiveCombine(a);
+            else{
+                $scope.checkPiecesPlacement();
+		        var score = 0;
+                for(var cp = 0; cp < $scope.pieces.length; cp++){
+                    if($scope.pieces[cp].ok)
+                        score++;
+                }
+                if(score > $scope.bestScore){
+                    $scope.bestScore = score;
+                    $scope.bestPlacement = [];
+                    for(var cp = 0; cp < $scope.pieces.length; cp++)
+                        $scope.bestPlacement[cp] = $scope.pieces[cp].placeId;
+                }
+                $scope.noOfPossibilities[score]++;
+            }
+                
+            a--;
+            $scope.taken[i[a]] = 0;
+        }}
+    }
 
 
 	//////// FOR ALL USERS: PREPARE GAME //////
