@@ -820,7 +820,7 @@ $scope.CanvasState = function(canvas) {
                 else if(rnd == 1)
                     document.getElementById("roundMessageDiv").innerHTML = "Damn kangaroos, never happy! Today it was impossible to please more then " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
                 else 
-                    document.getElementById("roundMessageDiv").innerHTML = "Who would've thought that kangaroos are more difficult to satisfy the women? At most, you could please " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
+                    document.getElementById("roundMessageDiv").innerHTML = "Who would've thought that kangaroos are more difficult to satisfy than women? At most, you could please " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
             }
     }
     
