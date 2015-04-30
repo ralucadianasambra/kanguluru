@@ -376,6 +376,7 @@ $scope.CanvasState = function(canvas) {
     this.width = canvas.width = window.innerWidth;
     this.height = canvas.height = Math.max(window.innerHeight, 450);
     this.ctx = canvas.getContext('2d');
+    this.showBest = false;
 
 
     // This complicates things a little but fixes mouse co-ordinate problems
@@ -450,6 +451,7 @@ $scope.CanvasState = function(canvas) {
 				var ctx = this.ctx;
 				this.clear();
                 for(cpl = 0; cpl < $scope.players.length; cpl++){
+                    
 
                     //draw board
 					X = window.innerWidth/$scope.players.length * (cpl+0.5) - $scope.resultBoardImg.width/2;
@@ -460,9 +462,22 @@ $scope.CanvasState = function(canvas) {
 					for(var cp = 0; cp < $scope.players[cpl].pieces.length; cp++){
                         if($scope.players[cpl].round == $scope.round){
                             var cPiece = $scope.players[cpl].pieces[cp];
-                            if(cPiece.placeId != -1){cPiece.x = X + $scope.resultBoardImg.width * $scope.places[cPiece.placeId].xp;
-                                cPiece.y = Y + $scope.resultBoardImg.height *$scope.places[cPiece.placeId].yp;
+                            if(cPiece.placeId != -1 || $scope.canvasState.showBest){
+
                                 cPiece.radius = $scope.radius * $scope.resultBoardImg.width/ $scope.boardImg.width;
+                                //if showing best option
+                                if($scope.myId == cpl && $scope.canvasState.showBest){
+                                    var colorId = cPiece.colorId;
+                                    var ok = cPiece.ok;
+                                    cPiece.colorId = $scope.bestPlacement[cp].colorId;
+                                    cPiece.ok = $scope.bestPlacement[cp].ok;
+                                    cPiece.x = X + $scope.resultBoardImg.width * $scope.places[$scope.bestPlacement[cp].placeId].xp;
+                                    cPiece.y = Y + $scope.resultBoardImg.height *$scope.places[$scope.bestPlacement[cp].placeId].yp;
+                                }
+                                else{
+                                    cPiece.x = X + $scope.resultBoardImg.width * $scope.places[cPiece.placeId].xp;
+                                    cPiece.y = Y + $scope.resultBoardImg.height *$scope.places[cPiece.placeId].yp;
+                                }
                                 cPiece.draw(this.ctx, $scope.colors);
                                 if(!cPiece.ok){
                                     ctx.strokeStyle = "rgba(150, 0, 0, 0.8)";
@@ -475,6 +490,10 @@ $scope.CanvasState = function(canvas) {
                                     ctx.lineTo(cPiece.x + cPiece.radius, cPiece.y - cPiece.radius);
                                     ctx.lineTo(cPiece.x - cPiece.radius, cPiece.y + cPiece.radius);
                                     ctx.stroke();
+                                }
+                                if($scope.myId == cpl && $scope.canvasState.showBest){
+                                    cPiece.colorId = colorId;
+                                    cPiece.ok = ok;
                                 }
                                 cPiece.radius = $scope.radius
                             }
@@ -596,12 +615,27 @@ $scope.CanvasState = function(canvas) {
     }, true); //end of 'mouseup'
     
     window.onkeydown = function(e) {
-          var c = e.keyCode;
-          if(c === 27){ //esc
-              $scope.time = 1;
-              $scope.countDown();
-            }
-      }; //end of 'onkeydown'
+        var c = e.keyCode;
+        console.log(c);
+        if(c === 27){ //esc
+            $scope.time = 1;
+            $scope.countDown();
+        }
+        if(c === 13){
+            $scope.canvasState.showBest = true;
+            $scope.canvasState.valid = false;
+            console.log("down");
+        }
+    }; //end of 'onkeydown'
+    
+     window.onkeyup = function(e) {
+        var c = e.keyCode;
+        if(c === 13){
+            $scope.canvasState.showBest = false;
+            $scope.canvasState.valid = false;
+            console.log("up");
+        }
+    }; //end of 'onkeydown'
 
     // **** Options! ****
     this.interval = 30;
@@ -822,6 +856,10 @@ $scope.CanvasState = function(canvas) {
                 else 
                     document.getElementById("roundMessageDiv").innerHTML = "Who would've thought that kangaroos are more difficult to satisfy than women? At most, you could please " + $scope.bestScore + " of them (" + $scope.noOfPossibilities[$scope.bestScore] + " possibilities)";
             }
+//            var text = "";
+//            for(var cp = 0; cp < $scope.pieces.length; cp++)
+//                text += $scope.bestPlacement[cp].colorId + ": " + $scope.bestPlacement[cp].placeId + "; ";
+//            document.getElementById("roundMessageDiv").innerHTML = text;
     }
     
 	$scope.endRound = function(){
@@ -1108,8 +1146,9 @@ $scope.CanvasState = function(canvas) {
                 if(score > $scope.bestScore){
                     $scope.bestScore = score;
                     $scope.bestPlacement = [];
-                    for(var cp = 0; cp < $scope.pieces.length; cp++)
-                        $scope.bestPlacement[cp] = $scope.pieces[cp].placeId;
+                    for(var cp = 0; cp < $scope.pieces.length; cp++){
+                        $scope.bestPlacement[cp] = {placeId: $scope.pieces[cp].placeId, colorId: $scope.pieces[cp].colorId, ok: $scope.pieces[cp].ok};
+                    }
                 }
                 $scope.noOfPossibilities[score]++;
             }
